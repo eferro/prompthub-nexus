@@ -14,9 +14,21 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteToken, setInviteToken] = useState('');
+  const [showSignUp, setShowSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Check for invite token in URL and restrict signup
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('invite');
+    if (token) {
+      setInviteToken(token);
+      setShowSignUp(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -131,43 +143,12 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="signin" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+          {showSignUp ? (
+            <div className="space-y-4">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold">Complete Your Invitation</h3>
+                <p className="text-sm text-muted-foreground">Create your account with the provided invitation</p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <Button
-                onClick={handleSignIn}
-                disabled={loading || !email || !password}
-                className="w-full"
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
-            </TabsContent>
-            
-            <TabsContent value="signup" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input
@@ -193,31 +174,63 @@ export default function Auth() {
                 disabled={loading || !email || !password}
                 className="w-full"
               >
-                {loading ? "Creating account..." : "Sign Up"}
+                {loading ? "Creating account..." : "Create Account"}
               </Button>
-            </TabsContent>
-          </Tabs>
-          
-          <div className="mt-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full mt-4"
-            >
-              {loading ? "Loading..." : "Continue with Google"}
-            </Button>
-          </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleSignIn}
+                  disabled={loading || !email || !password}
+                  className="w-full"
+                >
+                  {loading ? "Signing in..." : "Sign In"}
+                </Button>
+              </div>
+              
+              <div className="mt-4">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full mt-4"
+                >
+                  {loading ? "Loading..." : "Continue with Google"}
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
