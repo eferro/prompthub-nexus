@@ -38,8 +38,11 @@ jobs:
         VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
-    - name: Create 404.html
-      run: cp dist/index.html dist/404.html
+    - name: Ensure 404.html is in dist
+      run: |
+        # The 404.html should already be copied from public/ during build
+        # This is just a verification step
+        ls -la dist/404.html || echo "404.html not found in dist/"
 
     - name: Setup Pages
       uses: actions/configure-pages@v4

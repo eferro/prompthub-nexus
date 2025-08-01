@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>PromptHub Nexus</title>
+    <script>
+      // GitHub Pages SPA redirect
+      // Store the redirect path in session storage and redirect to index.html
+      // so React Router can handle it
+      sessionStorage.setItem('redirectPath', location.pathname + location.search + location.hash);
+      location.replace('/prompthub-nexus/');
+    </script>
+  </head>
+  <body>
+    <!-- This content will only show if JavaScript is disabled -->
+    <noscript>
+      <p>JavaScript is required to run this application.</p>
+      <a href="/prompthub-nexus/">Go to homepage</a>
+    </noscript>
+  </body>
+</html>

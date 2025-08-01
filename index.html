@@ -19,6 +19,16 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Handle GitHub Pages SPA redirect
+      (function() {
+        const redirectPath = sessionStorage.getItem('redirectPath');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectPath');
+          history.replaceState(null, null, redirectPath);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
