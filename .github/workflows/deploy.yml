@@ -35,8 +35,8 @@ jobs:
     - name: Build
       run: bun run build
       env:
-        VITE_SUPABASE_URL: https://myzcmmocjlaajnovswuf.supabase.co
-        VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15emNtbW9jamxhYWpub3Zzd3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3MjU1NDksImV4cCI6MjA2OTMwMTU0OX0.udA23pyXH3ZPwvH2Smc6H_UkWL_KVN9u0EyMgCtp5kE
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
     - name: Create 404.html
       run: cp dist/index.html dist/404.html
