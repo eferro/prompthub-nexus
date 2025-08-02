@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,12 +16,13 @@ interface OrganizationMember {
   id: string;
   name: string;
   is_public: boolean;
-  role: 'owner' | 'admin' | 'viewer';
+  role: 'owner' | 'admin' | 'viewer' | 'super_admin';
   member_count?: number;
 }
 
 const Organizations = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isSuperAdmin } = useAuth();
+  const { createOrganization: createOrgAsSuperAdmin, loading: superAdminLoading } = useSuperAdmin();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [organizations, setOrganizations] = useState<OrganizationMember[]>([]);
@@ -94,6 +96,15 @@ const Organizations = () => {
   };
 
   const createOrganization = async () => {
+    if (!isSuperAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only super admin can create organizations",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!newOrgName.trim()) {
       toast({
         title: "Error",
@@ -104,49 +115,20 @@ const Organizations = () => {
     }
 
     try {
-      // Create organization
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .insert({
-          name: newOrgName.trim(),
-          is_public: false
-        })
-        .select()
-        .single();
-
-      if (orgError) throw orgError;
-
-      // Add user as owner
-      const { error: memberError } = await supabase
-        .from('organization_members')
-        .insert({
-          org_id: orgData.id,
-          user_id: user?.id,
-          role: 'owner'
-        });
-
-      if (memberError) throw memberError;
-
-      toast({
-        title: "Success",
-        description: "Organization created successfully"
-      });
-
+      await createOrgAsSuperAdmin(newOrgName.trim(), false);
       setIsCreateDialogOpen(false);
       setNewOrgName('');
       fetchOrganizations();
     } catch (error) {
       console.error('Error creating organization:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create organization",
-        variant: "destructive"
-      });
+      // Error handling is already done in the hook
     }
   };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
+      case 'super_admin':
+        return 'destructive';
       case 'owner':
         return 'default';
       case 'admin':
@@ -187,13 +169,14 @@ const Organizations = () => {
             </div>
           </div>
           
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Organization
-              </Button>
-            </DialogTrigger>
+          {isSuperAdmin && (
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button disabled={superAdminLoading}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Organization
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create New Organization</DialogTitle>
@@ -219,7 +202,8 @@ const Organizations = () => {
                 <Button onClick={createOrganization}>Create Organization</Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          )}
         </header>
 
         {organizations.length === 0 ? (
@@ -227,12 +211,17 @@ const Organizations = () => {
             <CardContent>
               <h3 className="text-lg font-semibold mb-2">No organizations yet</h3>
               <p className="text-muted-foreground mb-4">
-                Create or join an organization to start managing prompts
+                {isSuperAdmin 
+                  ? "Create your first organization to start managing prompts"
+                  : "You need to be invited to an organization by a super admin"
+                }
               </p>
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Organization
-              </Button>
+              {isSuperAdmin && (
+                <Button onClick={() => setIsCreateDialogOpen(true)} disabled={superAdminLoading}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Organization
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (

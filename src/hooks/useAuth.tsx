@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isSuperAdmin: boolean;
+  superAdminLoading: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -15,6 +17,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [superAdminLoading, setSuperAdminLoading] = useState(false);
+
+  // Check super admin status when user changes
+  useEffect(() => {
+    const checkSuperAdminStatus = async () => {
+      if (!user) {
+        setIsSuperAdmin(false);
+        setSuperAdminLoading(false);
+        return;
+      }
+
+      setSuperAdminLoading(true);
+      try {
+        const { data, error } = await supabase.rpc('get_current_user_super_admin_status');
+        if (error) {
+          console.error('Error checking super admin status:', error);
+          setIsSuperAdmin(false);
+        } else {
+          setIsSuperAdmin(data?.is_super_admin || false);
+        }
+      } catch (error) {
+        console.error('Error checking super admin status:', error);
+        setIsSuperAdmin(false);
+      } finally {
+        setSuperAdminLoading(false);
+      }
+    };
+
+    checkSuperAdminStatus();
+  }, [user]);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -44,6 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    isSuperAdmin,
+    superAdminLoading,
     signOut,
   };
 

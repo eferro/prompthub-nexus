@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Prompts from "./pages/Prompts";
 import Organizations from "./pages/Organizations";
 import ApiKeys from "./pages/ApiKeys";
+import SuperAdminPanel from "./pages/SuperAdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,7 @@ const App = () => (
             <Route path="/prompts" element={<Prompts />} />
             <Route path="/organizations" element={<Organizations />} />
             <Route path="/api-keys" element={<ApiKeys />} />
-            <Route path="/admin" element={<div>Admin page - Coming soon</div>} />
+            <Route path="/super-admin" element={<SuperAdminPanel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

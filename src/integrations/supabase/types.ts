@@ -298,9 +298,50 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_organization_as_super_admin: {
+        Args: { p_name: string; p_is_public?: boolean }
+        Returns: string
+      }
+      create_user_invitation: {
+        Args: { p_email: string; p_role?: Database["public"]["Enums"]["org_role"]; p_org_id?: string }
+        Returns: string
+      }
       generate_invitation_token: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_all_users_with_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          user_id: string
+          email: string
+          display_name: string
+          organizations: Array<{
+            org_id: string
+            org_name: string
+            role: Database["public"]["Enums"]["org_role"]
+            is_public: boolean
+          }>
+        }>
+      }
+      get_current_user_super_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          is_super_admin: boolean
+          user_id: string
+          email: string
+        }
+      }
+      get_pending_invitations: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{
+          id: string
+          email: string
+          role: Database["public"]["Enums"]["org_role"]
+          org_name: string
+          expires_at: string
+          created_at: string
+        }>
       }
       get_user_org_role: {
         Args: { user_id: string; org_id: string }
@@ -308,6 +349,14 @@ export type Database = {
       }
       is_super_admin: {
         Args: { user_id?: string }
+        Returns: boolean
+      }
+      promote_user_to_owner: {
+        Args: { p_user_id: string; p_org_id: string }
+        Returns: boolean
+      }
+      revoke_invitation: {
+        Args: { invitation_id: string }
         Returns: boolean
       }
       user_is_org_member: {

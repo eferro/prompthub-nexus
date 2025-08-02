@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Shield } from 'lucide-react';
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +35,15 @@ const Index = () => {
       <div className="max-w-4xl mx-auto">
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">PromptMesh</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-3xl font-bold">PromptMesh</h1>
+              {isSuperAdmin && (
+                <Badge variant="destructive" className="text-xs">
+                  <Shield className="h-3 w-3 mr-1" />
+                  SUPER ADMIN
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground">Welcome back, {user.email}</p>
           </div>
           <Button variant="outline" onClick={signOut}>
@@ -42,6 +52,28 @@ const Index = () => {
         </header>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {isSuperAdmin && (
+            <Card className="border-red-200 bg-red-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-700">
+                  <Shield className="h-5 w-5" />
+                  Super Admin Panel
+                </CardTitle>
+                <CardDescription>
+                  Manage users, organizations, and invitations (Super Admin Only)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full bg-red-600 hover:bg-red-700" 
+                  onClick={() => navigate('/super-admin')}
+                >
+                  Open Admin Panel
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Prompts</CardTitle>
