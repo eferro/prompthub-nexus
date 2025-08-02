@@ -46,7 +46,7 @@ export default function Auth() {
   const handleSignUp = async () => {
     setLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -126,7 +126,7 @@ export default function Auth() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}auth`,
       });
 
       if (error) {
