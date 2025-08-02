@@ -33,28 +33,22 @@ export default function Auth() {
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const type = hashParams.get('type');
     
-    // Debug logging
-    console.log('URL Debug:', {
-      fullUrl: window.location.href,
-      hash: window.location.hash,
-      type: type,
-      willShowPasswordReset: type === 'recovery'
-    });
-    
     if (token) {
       setInviteToken(token);
       setShowSignUp(true);
     } else if (type === 'recovery') {
-      console.log('Setting showPasswordReset to true');
       setShowPasswordReset(true);
     }
   }, []);
 
   useEffect(() => {
-    if (user && !showPasswordReset) {
+    // Only redirect if user is authenticated AND not coming from password reset email
+    const isPasswordResetFlow = window.location.hash.includes('type=recovery');
+    
+    if (user && !isPasswordResetFlow) {
       navigate('/');
     }
-  }, [user, navigate, showPasswordReset]);
+  }, [user, navigate]);
 
   const handleSignUp = async () => {
     setLoading(true);
