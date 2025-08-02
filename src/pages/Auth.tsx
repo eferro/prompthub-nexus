@@ -46,7 +46,8 @@ export default function Auth() {
   const handleSignUp = async () => {
     setLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+      const basePath = import.meta.env.PROD ? '/prompthub-nexus' : '';
+      const redirectUrl = `${window.location.origin}${basePath}/`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -125,8 +126,11 @@ export default function Auth() {
 
     setLoading(true);
     try {
+      const basePath = import.meta.env.PROD ? '/prompthub-nexus' : '';
+      const redirectUrl = `${window.location.origin}${basePath}/auth`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}auth`,
+        redirectTo: redirectUrl,
       });
 
       if (error) {
