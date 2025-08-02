@@ -55,6 +55,50 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          org_id: string | null
+          role: Database["public"]["Enums"]["org_role"]
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          org_id?: string | null
+          role?: Database["public"]["Enums"]["org_role"]
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          org_id?: string | null
+          role?: Database["public"]["Enums"]["org_role"]
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -254,9 +298,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invitation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_org_role: {
         Args: { user_id: string; org_id: string }
         Returns: Database["public"]["Enums"]["org_role"]
+      }
+      is_super_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
       }
       user_is_org_member: {
         Args: { user_id: string; org_id: string }
@@ -264,7 +316,7 @@ export type Database = {
       }
     }
     Enums: {
-      org_role: "owner" | "admin" | "viewer"
+      org_role: "owner" | "admin" | "viewer" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -392,7 +444,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      org_role: ["owner", "admin", "viewer"],
+      org_role: ["owner", "admin", "viewer", "super_admin"],
     },
   },
 } as const
