@@ -33,19 +33,28 @@ export default function Auth() {
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const type = hashParams.get('type');
     
+    // Debug logging
+    console.log('URL Debug:', {
+      fullUrl: window.location.href,
+      hash: window.location.hash,
+      type: type,
+      willShowPasswordReset: type === 'recovery'
+    });
+    
     if (token) {
       setInviteToken(token);
       setShowSignUp(true);
     } else if (type === 'recovery') {
+      console.log('Setting showPasswordReset to true');
       setShowPasswordReset(true);
     }
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && !showPasswordReset) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, navigate, showPasswordReset]);
 
   const handleSignUp = async () => {
     setLoading(true);
