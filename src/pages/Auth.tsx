@@ -19,6 +19,7 @@ export default function Auth() {
   const [inviteToken, setInviteToken] = useState('');
   const [showSignUp, setShowSignUp] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [isPasswordResetMode, setIsPasswordResetMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -38,17 +39,16 @@ export default function Auth() {
       setShowSignUp(true);
     } else if (type === 'recovery') {
       setShowPasswordReset(true);
+      setIsPasswordResetMode(true); // Persist this state
     }
   }, []);
 
   useEffect(() => {
-    // Only redirect if user is authenticated AND not coming from password reset email
-    const isPasswordResetFlow = window.location.hash.includes('type=recovery');
-    
-    if (user && !isPasswordResetFlow) {
+    // Only redirect if user is authenticated AND not in password reset mode
+    if (user && !isPasswordResetMode) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, navigate, isPasswordResetMode]);
 
   const handleSignUp = async () => {
     setLoading(true);
@@ -210,6 +210,7 @@ export default function Auth() {
         // Clear the URL params and reset the form
         window.history.replaceState({}, '', '/auth');
         setShowPasswordReset(false);
+        setIsPasswordResetMode(false); // Clear password reset mode
         setNewPassword('');
         setConfirmPassword('');
       }
