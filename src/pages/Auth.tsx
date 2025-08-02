@@ -25,9 +25,13 @@ export default function Auth() {
 
   // Check for invite token in URL and restrict signup, or password reset
   useEffect(() => {
+    // Check search params for invite tokens
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('invite');
-    const type = urlParams.get('type');
+    
+    // Check hash fragments for password reset (Supabase uses hash fragments)
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const type = hashParams.get('type');
     
     if (token) {
       setInviteToken(token);
