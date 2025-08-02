@@ -14,19 +14,26 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [inviteToken, setInviteToken] = useState('');
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Check for invite token in URL and restrict signup
+  // Check for invite token in URL and restrict signup, or password reset
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('invite');
+    const type = urlParams.get('type');
+    
     if (token) {
       setInviteToken(token);
       setShowSignUp(true);
+    } else if (type === 'recovery') {
+      setShowPasswordReset(true);
     }
   }, []);
 
@@ -106,22 +113,94 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const handleGoogleSignIn = async () => {
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address to reset your password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
       });
 
       if (error) {
         toast({
-          title: "Error signing in with Google",
+          title: "Error sending reset email",
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        toast({
+          title: "Reset email sent",
+          description: "Check your email for password reset instructions.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Fields required",
+        description: "Please fill in both password fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are identical.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Error updating password",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Password updated",
+          description: "Your password has been successfully updated.",
+        });
+        // Clear the URL params and reset the form
+        window.history.replaceState({}, '', '/auth');
+        setShowPasswordReset(false);
+        setNewPassword('');
+        setConfirmPassword('');
       }
     } catch (error) {
       toast({
@@ -143,7 +222,41 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {showSignUp ? (
+          {showPasswordReset ? (
+            <div className="space-y-4">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold">Reset Your Password</h3>
+                <p className="text-sm text-muted-foreground">Enter your new password below</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={handlePasswordUpdate}
+                disabled={loading || !newPassword || !confirmPassword}
+                className="w-full"
+              >
+                {loading ? "Updating password..." : "Update Password"}
+              </Button>
+            </div>
+          ) : showSignUp ? (
             <div className="space-y-4">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-semibold">Complete Your Invitation</h3>
@@ -207,27 +320,17 @@ export default function Auth() {
                 >
                   {loading ? "Signing in..." : "Sign In"}
                 </Button>
-              </div>
-              
-              <div className="mt-4">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or continue with
-                    </span>
-                  </div>
+                
+                <div className="text-center mt-4">
+                  <button
+                    type="button"
+                    onClick={handlePasswordReset}
+                    disabled={loading}
+                    className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline disabled:opacity-50"
+                  >
+                    Forgot your password?
+                  </button>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                  className="w-full mt-4"
-                >
-                  {loading ? "Loading..." : "Continue with Google"}
-                </Button>
               </div>
             </>
           )}
